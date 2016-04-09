@@ -29,6 +29,9 @@ func Run(program []byte, input io.ByteReader, output io.ByteWriter) {
 		case ',':
 			var b byte
 			b, err = input.ReadByte()
+			if err == io.EOF {
+				return
+			}
 			data[d] = b
 		case '[':
 			if data[d] == 0 {
