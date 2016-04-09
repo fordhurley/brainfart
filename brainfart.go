@@ -33,8 +33,16 @@ func Run(program []byte, input io.ByteReader, output io.ByteWriter) {
 		case '[':
 			if data[d] == 0 {
 				// Jump forward to end of loop:
-				for program[i] != ']' {
+				depth := 1
+				for depth > 0 {
 					i++
+					switch program[i] {
+					case '[':
+						// Nested loop, so skip the next closing bracket:
+						depth++
+					case ']':
+						depth--
+					}
 				}
 			} else {
 				// Remember this so we can jump back:

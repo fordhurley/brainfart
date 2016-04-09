@@ -48,6 +48,17 @@ func ExampleRun() {
 	// [42 11 53]
 }
 
+func ExampleRun_nestedloops() {
+	inst := []byte(".[.[.++++.].].")
+	var input = new(bytes.Reader)
+	var output = new(bytes.Buffer)
+	Run(inst, input, output)
+	fmt.Println(output.Bytes())
+
+	// Output:
+	// [0 0]
+}
+
 func ExampleRun_helloworld() {
 	inst := []byte(`++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.`)
 	var input = new(bytes.Reader)
