@@ -10,15 +10,22 @@ import (
 )
 
 func main() {
+	var program []byte
+	var err error
+
 	if len(os.Args) < 2 {
-		fmt.Fprintf(os.Stderr, "Usage: %s <filename>", os.Args[0])
-		os.Exit(1)
+		// Read program from stdin
+		program, err = ioutil.ReadAll(os.Stdin)
+	} else {
+		// Read program from file named by first argument
+		filename := os.Args[1]
+		program, err = ioutil.ReadFile(filename)
 	}
 
-	program, err := ioutil.ReadFile(os.Args[1])
 	if err != nil {
 		fmt.Fprint(os.Stderr, err)
 	}
+
 	in := bufio.NewReader(os.Stdin)
 	out := bufio.NewWriter(os.Stdout)
 	brainfart.Run(program, in, out)
