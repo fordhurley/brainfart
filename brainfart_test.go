@@ -3,75 +3,78 @@ package brainfart
 import (
 	"bytes"
 	"fmt"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-// Using examples here just because it's easier to check the output.
+func checkOutput(t *testing.T, program string, input []byte, expected []byte) {
+	var in = bytes.NewReader(input)
+	var out = new(bytes.Buffer)
+	Run([]byte(program), in, out)
+	assert.Equal(t, out.Bytes(), expected)
+}
 
-func ExampleRun() {
-	// Output
-	inst := []byte("...")
-	var input = new(bytes.Reader)
-	var output = new(bytes.Buffer)
-	Run(inst, input, output)
-	fmt.Println(output.Bytes())
+func TestOutput(t *testing.T) {
+	checkOutput(t,
+		"...",
+		[]byte{},
+		[]byte{0, 0, 0},
+	)
+}
 
-	// Increment/decrement cell value
-	inst = []byte(".+.+.+.-.-.-.")
-	output.Reset()
-	Run(inst, input, output)
-	fmt.Println(output.Bytes())
+func TestIncrementDecrementCellValue(t *testing.T) {
+	checkOutput(t,
+		".+.+.+.-.-.-.",
+		[]byte{},
+		[]byte{0, 1, 2, 3, 2, 1, 0},
+	)
+}
 
-	// Increment/decrement instruction pointer
-	inst = []byte(".>+.>++.>+++.<.<.<.")
-	output.Reset()
-	Run(inst, input, output)
-	fmt.Println(output.Bytes())
+func TestIncrementDecrementInstrPointer(t *testing.T) {
+	checkOutput(t,
+		".>+.>++.>+++.<.<.<.",
+		[]byte{},
+		[]byte{0, 1, 2, 3, 2, 1, 0},
+	)
+}
 
-	// Add two cells (5 + 3 = 8)
-	inst = []byte("+++++.>+++.<[->+<].>.")
-	output.Reset()
-	Run(inst, input, output)
-	fmt.Println(output.Bytes())
+func TestAddCells(t *testing.T) {
+	// 5 + 3 = 8
+	checkOutput(t,
+		"+++++.>+++.<[->+<].>.",
+		[]byte{},
+		[]byte{5, 3, 0, 8},
+	)
+}
 
+func TestInput(t *testing.T) {
 	// Input two values and add them together
-	inst = []byte(",.>,.<[->+<]>.")
-	input = bytes.NewReader([]byte{42, 11})
-	output.Reset()
-	Run(inst, input, output)
-	fmt.Println(output.Bytes())
-
-	// Output:
-	// [0 0 0]
-	// [0 1 2 3 2 1 0]
-	// [0 1 2 3 2 1 0]
-	// [5 3 0 8]
-	// [42 11 53]
+	checkOutput(t,
+		",.>,.<[->+<]>.",
+		[]byte{42, 11},
+		[]byte{42, 11, 53},
+	)
 }
 
-func ExampleRun_nestedloops() {
-	inst := []byte(".[.[.++++.].].")
-	var input = new(bytes.Reader)
-	var output = new(bytes.Buffer)
-	Run(inst, input, output)
-	fmt.Println(output.Bytes())
-
-	// Output:
-	// [0 0]
+func TestNestedLoops(t *testing.T) {
+	checkOutput(t,
+		".[.[.++++.].].",
+		[]byte{},
+		[]byte{0, 0},
+	)
 }
 
-func ExampleRun_helloworld() {
-	inst := []byte(`++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.`)
-	var input = new(bytes.Reader)
-	var output = new(bytes.Buffer)
-	Run(inst, input, output)
-	fmt.Println(output.String())
-
-	// Output:
-	// Hello World!
+func TestHelloWorld(t *testing.T) {
+	checkOutput(t,
+		`++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.`,
+		[]byte{},
+		[]byte("Hello World!\n"),
+	)
 }
 
 func ExampleRun_rot13() {
-	inst := []byte(`
+	program := []byte(`
 		-,+[                         Read first character and start outer character reading loop
 		    -[                       Skip forward if character is 0
 		        >>++++[>++++++++<-]  Set up divisor (32) for division loop
@@ -103,9 +106,18 @@ func ExampleRun_rot13() {
 	`)
 	var input = bytes.NewReader([]byte("abc xyz"))
 	var output = new(bytes.Buffer)
-	Run(inst, input, output)
+	Run(program, input, output)
 	fmt.Println(output.String())
 
 	// Output:
 	// nop klm
+}
+
+func BenchmarkHelloWorld(b *testing.B) {
+	program := []byte(`++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.`)
+	var input = new(bytes.Buffer)
+	for i := 0; i < b.N; i++ {
+		var output = new(bytes.Buffer)
+		Run(program, input, output)
+	}
 }
