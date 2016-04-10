@@ -5,13 +5,15 @@ import (
 	"log"
 )
 
+const memorySize = 1024
+
 // Run runs the program.
 func Run(program []byte, input io.ByteReader, output io.ByteWriter) {
 	var i int       // instruction pointer
 	var marks []int // loop start markers
 
 	var d int // data pointer
-	var data = make([]byte, 1024)
+	var data [memorySize]byte
 
 	for i = 0; i < len(program); i++ {
 		var err error
