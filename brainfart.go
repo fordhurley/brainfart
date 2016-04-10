@@ -2,13 +2,12 @@ package brainfart
 
 import (
 	"io"
-	"log"
 )
 
 const memorySize = 1024
 
 // Run runs the program.
-func Run(program []byte, input io.ByteReader, output io.ByteWriter) {
+func Run(program []byte, input io.ByteReader, output io.ByteWriter) error {
 	var i int       // instruction pointer
 	var marks []int // loop start markers
 
@@ -32,7 +31,7 @@ func Run(program []byte, input io.ByteReader, output io.ByteWriter) {
 			var b byte
 			b, err = input.ReadByte()
 			if err == io.EOF {
-				return
+				return nil
 			}
 			data[d] = b
 		case '[':
@@ -63,7 +62,8 @@ func Run(program []byte, input io.ByteReader, output io.ByteWriter) {
 			}
 		}
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
+	return nil
 }
